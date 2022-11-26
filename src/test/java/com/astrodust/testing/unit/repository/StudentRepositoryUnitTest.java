@@ -3,6 +3,7 @@ package com.astrodust.testing.unit.repository;
 import com.astrodust.testing.entity.Student;
 import com.astrodust.testing.enums.Gender;
 import com.astrodust.testing.repository.StudentRepository;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -10,7 +11,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @DataJpaTest
-class StudentRepositoryTest {
+@Tag("UnitTest")
+class StudentRepositoryUnitTest {
 
     @Autowired
     private StudentRepository studentRepository;

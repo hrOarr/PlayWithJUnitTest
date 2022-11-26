@@ -7,31 +7,34 @@ import com.astrodust.testing.exceptions.ResourceNotFoundException;
 import com.astrodust.testing.repository.StudentRepository;
 import com.astrodust.testing.service.StudentService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@TestPropertySource(locations = {"classpath:application.properties"})
-class StudentServiceTest {
+@Tag("UnitTest")
+class StudentServiceUnitTest {
 
     @InjectMocks
     private StudentService underTest;
 
     @Mock
     private StudentRepository studentRepository;
+
+    @Captor
+    private ArgumentCaptor<Student> studentArgumentCaptor;
 
     @BeforeEach
     void setUp(){
@@ -45,7 +48,8 @@ class StudentServiceTest {
         underTest.getAllStudents();
 
         // then
-        verify(studentRepository).findAll();
+        //verify(studentRepository, times(1)).findAll();
+        then(studentRepository).should(times(1)).findAll(); // BDD Style
     }
 
     @Test
@@ -58,19 +62,20 @@ class StudentServiceTest {
                 Gender.MALE
         );
 
-        when(studentRepository.selectExistsEmail(anyString())).thenReturn(false);
-        when(studentRepository.save(any(Student.class))).thenAnswer(ans->ans.getArguments()[0]);
+//        when(studentRepository.selectExistsEmail(anyString())).thenReturn(false);
+//        when(studentRepository.save(any(Student.class))).thenAnswer(ans->ans.getArguments()[0]);
+        willReturn(false).given(studentRepository).selectExistsEmail(anyString());
+        willAnswer(ans->ans.getArguments()[0]).given(studentRepository).save(any(Student.class));
 
         // when
         Student savedStudent = underTest.addStudent(student);
 
         // then
-        ArgumentCaptor<Student> studentArgumentCaptor = ArgumentCaptor.forClass(Student.class);
-        verify(studentRepository).save(studentArgumentCaptor.capture());
+//        verify(studentRepository).save(studentArgumentCaptor.capture());
+        then(studentRepository).should(times(1)).save(studentArgumentCaptor.capture());
 
-        Student capturedStudent = studentArgumentCaptor.getValue();
-        assertThat(capturedStudent).isEqualTo(student);
-        assertThat(savedStudent).isEqualTo(student);
+        assertThat(studentArgumentCaptor.getValue()).isEqualTo(student);
+        assertThat(studentArgumentCaptor.getValue()).isEqualTo(savedStudent);
     }
 
     @Test
@@ -88,8 +93,7 @@ class StudentServiceTest {
 
         // then
         assertThatThrownBy(()->underTest.addStudent(student))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Email " + student.getEmail() + " taken");
+                .isInstanceOf(BadRequestException.class);
 
         verify(studentRepository, never()).save(any());
     }
@@ -132,6 +136,7 @@ class StudentServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Student with id " + studentId + " does not exists");
 
-        verify(studentRepository, never()).deleteById(anyLong());
+        //verify(studentRepository, never()).deleteById(anyLong());
+        then(studentRepository).should(never()).deleteById(anyLong());
     }
 }

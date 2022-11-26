@@ -5,6 +5,7 @@ import com.astrodust.testing.entity.Student;
 import com.astrodust.testing.enums.Gender;
 import com.astrodust.testing.service.StudentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,7 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(StudentController.class)
-class StudentControllerTest {
+@Tag("UnitTest")
+class StudentControllerUnitTest {
 
     private static final String URI = "/api/v1/students";
 
@@ -56,7 +58,7 @@ class StudentControllerTest {
     @ParameterizedTest
     @CsvSource({
             "0,Student-1, student1@gmail.com, MALE",
-            "0,Student-3, , MALE",
+            "0,Student-3, , MALE"
     })
     void addStudent(Long id, String name, String email, Gender gender) throws Exception {
         // given
